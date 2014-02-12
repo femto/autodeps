@@ -8,7 +8,13 @@ class ReactiveInteger
     @dep = Autodeps::Dependency.new
   end
   def change_to(i)
+    if i != @i
+      changed = true
+    end
     @i = i
+    if changed
+      @dep.tmp_flush
+    end
   end
   def value
     dep.depend

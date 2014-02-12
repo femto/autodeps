@@ -25,15 +25,14 @@ module Autodeps
     def compute
       self.invalidated = false;
 
-      #var previous = Deps.currentComputation;
-      #setCurrentComputation(self);
-      #var previousInCompute = in_compute;
+      previous = Autodeps.current_computation;
+      Autodeps.current_computation = self;
 
       in_compute = true;
       begin
         block.call(self)
       ensure
-
+        Autodeps.current_computation = previous;
         in_compute = false;
       end
     end
