@@ -14,6 +14,8 @@ module Autodeps
       begin
         self.compute();
         errored = false;
+      rescue => e
+          raise e
       ensure
         self.first_run = false;
         self.stop() if errored
@@ -46,6 +48,13 @@ module Autodeps
       self.recomputing = false;
     end
 
+    def stop
+      if (! self.stopped)
+            self.stopped = true;
+            self.invalidate();
+      end
+    end
+
     def require_flush
       Autodeps::flush
     end
@@ -61,7 +70,7 @@ module Autodeps
       # ourselves, since we'll rerun immediately anyway.
       if (! self.recomputing && ! self.stopped)
         self.invalidated = true;
-        Autodeps.add_pendingComputation(self);
+        Autodeps.add_pending_computation(self);
         require_flush();
       end
 

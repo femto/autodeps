@@ -1,18 +1,20 @@
 module Autodeps
-  @pendingComputations = []
-  @afterFlushCallbacks = []
+  @pending_computations = []
+  @after_flush_callbacks = []
   @constructingComputation = false
+  @active = false
 
   class << self
-    def add_pendingComputation(pendingComputation)
-      @pendingComputations << pendingComputation
+    attr_accessor :active
+    def add_pending_computation(pendingComputation)
+      @pending_computations << pendingComputation
     end
 
     def autorun(&block)
       raise 'Autodeps.autorun requires a block' if block.nil?
 
       @constructingComputation = true
-      c = Computation.new(block);
+      c = Computation.new(block, Autodeps.current_computation);
 
       return c
     end
@@ -29,12 +31,12 @@ module Autodeps
       @willFlush = true
 
 
-      while (@pendingComputations.length > 0 ||
-          @afterFlushCallbacks.length > 0) do
+      while (@pending_computations.length > 0 ||
+          @after_flush_callbacks.length > 0) do
 
           #recompute all pending computations
-        comps = @pendingComputations;
-        @pendingComputations = [];
+        comps = @pending_computations;
+        @pending_computations = [];
 
         comps.each do |comp|
           comp.recompute();
@@ -55,6 +57,14 @@ module Autodeps
       inFlush = false;
       willFlush = false;
 
+    end
+
+    def current_computation
+      Thread.current["Autodeps::current_computation"]
+    end
+    def current_computation=(computation)
+      Thread.current["Autodeps::current_computation"] = computation
+      self.active = !! computation;
     end
   end
 end
