@@ -30,7 +30,7 @@ module Autodeps
         end
         clazz.send(:after_save) do
           clazz._deps.each do |attribute_keys, values|
-            if attribute_keys.any? {|attribute_key| self.send("#{attribute_key.to_s}_changed?")} || true
+            if attribute_keys.any? {|attribute_key| self.send("#{attribute_key.to_s}_changed?")}
               values.each do |mapping|
                 relation = mapping.dependent
                 mapping.key_mapping.each do |source_key, target_key|
