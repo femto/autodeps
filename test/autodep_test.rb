@@ -1,12 +1,17 @@
 require '../test/test_helper'
 require 'test/unit'
 class AutoDepsTest < Test::Unit::TestCase
-  def test_first
-    Autodeps.autorun do |computation|
-      puts "ok"
-      computation.invalidate()
+  def test_invalidate
+    a = 3
+    b = nil
+    computation = Autodeps.autorun do |computation|
+      b = a
     end
-    #computation.invalidate()
+    assert_equal b,a
+
+    a = 5
+    computation.invalidate
+    assert_equal b,a
 
   end
 end

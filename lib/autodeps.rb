@@ -6,3 +6,4 @@ end
 
 require "autodeps/autodeps"
 require "autodeps/computation"
+require "autodeps/dependency"
