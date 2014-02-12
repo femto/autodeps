@@ -18,7 +18,7 @@ module Autodeps
         clazz = Object.const_get(clazz) if clazz.is_a?(String)
         options[:key_mapping] ||= {:id => (clazz.name.underscore.gsub(/^.*\//,"") + "_id").to_sym}
         class << clazz
-          attr_accessor :_deps
+          attr_accessor :_deps, :_autodeps_after_save_callbacked
         end
         clazz._deps ||= {}
 
@@ -28,25 +28,28 @@ module Autodeps
         Autodeps.autorun do
 
         end
-        clazz.send(:after_save) do
-          clazz._deps.each do |attribute_keys, values|
-            if attribute_keys.any? {|attribute_key| self.send("#{attribute_key.to_s}_changed?")}
-              values.each do |mapping|
-                relation = mapping.dependent
-                mapping.key_mapping.each do |source_key, target_key|
-                  relation = relation.where(target_key => self.send(source_key))
-                end
-
-                relation.each do |tuple|
-                  mapping.value_mapping.each do |source_key, target_key|
-                    tuple[target_key] = self.send(source_key)
+        if !clazz._autodeps_after_save_callbacked
+          clazz._autodeps_after_save_callbacked = true
+          clazz.send(:after_save) do
+            clazz._deps.each do |attribute_keys, values|
+              if attribute_keys.any? {|attribute_key| self.send("#{attribute_key.to_s}_changed?")}
+                values.each do |mapping|
+                  relation = mapping.dependent
+                  mapping.key_mapping.each do |source_key, target_key|
+                    relation = relation.where(target_key => self.send(source_key))
                   end
-                  tuple.save
+
+                  relation.each do |tuple|
+                    mapping.value_mapping.each do |source_key, target_key|
+                      tuple[target_key] = self.send(source_key)
+                    end
+                    tuple.save
+                  end
                 end
               end
             end
-          end
 
+          end
         end
       end
     end
