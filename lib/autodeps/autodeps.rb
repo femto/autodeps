@@ -6,8 +6,8 @@ module Autodeps
 
   class << self
     attr_accessor :active
-    def add_pending_computation(pendingComputation)
-      @pending_computations << pendingComputation
+    def add_pending_computation(pending_computation)
+      @pending_computations << pending_computation
     end
 
     def autorun(&block)

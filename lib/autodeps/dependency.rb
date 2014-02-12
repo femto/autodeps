@@ -5,10 +5,24 @@ module Autodeps
       @dependents = []
     end
     def depend(computation = Autodeps.current_computation)
-      @dependents << computation if !@dependents.include?(computation)
+
+      if (!computation)
+        return false if (!Autodeps.active)
+        computation = Deps.current_computation;
+      end
+      if !@dependents.include?(computation)
+        @dependents << computation
+        #computation.onInvalidate(function () {
+        #  delete self._dependentsById[id];
+        #});
+        return true
+      else
+        return false;
+      end
+
     end
 
-    def tmp_flush
+    def changed
       @dependents.each do |computation|
         computation.invalidate
       end

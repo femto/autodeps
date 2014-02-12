@@ -13,7 +13,7 @@ class ReactiveInteger
     end
     @i = i
     if changed
-      @dep.tmp_flush
+      @dep.changed
     end
   end
   def value
@@ -48,5 +48,23 @@ class AutoDepsTest < Test::Unit::TestCase
     a.change_to 5
 
     assert_equal b,5
+  end
+
+  def test_reactive_integer_add
+    a = ReactiveInteger.new(3)
+    b = ReactiveInteger.new(5)
+    c = nil
+    computation = Autodeps.autorun do |computation|
+      c = a.value + b.value
+    end
+    assert_equal c,8
+
+    a.change_to 5
+
+    assert_equal c,10
+
+    b.change_to 15
+
+    assert_equal c,20
   end
 end
