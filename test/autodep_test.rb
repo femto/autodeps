@@ -1,26 +1,7 @@
 require '../test/test_helper'
 require 'test/unit'
 
-class ReactiveData
-  attr_accessor :value, :dep
-  def initialize(value)
-    @value = value
-    @dep = Autodeps::Dependency.new
-  end
-  def change_to(value)
-    if value != @value
-      changed = true
-    end
-    @value = value
-    if changed
-      @dep.changed
-    end
-  end
-  def value
-    dep.depend
-    @value
-  end
-end
+
 
 class AutoDepsTest < Test::Unit::TestCase
   def test_invalidate
@@ -38,7 +19,7 @@ class AutoDepsTest < Test::Unit::TestCase
   end
 
   def test_reactive_integer
-    a = ReactiveData.new(3)
+    a = Autodeps::ReactiveData.new(3)
     b = nil
     computation = Autodeps.autorun do |computation|
       b = a.value
@@ -51,8 +32,8 @@ class AutoDepsTest < Test::Unit::TestCase
   end
 
   def test_reactive_integer_add
-    a = ReactiveData.new(3)
-    b = ReactiveData.new(5)
+    a = Autodeps::ReactiveData.new(3)
+    b = Autodeps::ReactiveData.new(5)
     c = nil
     computation = Autodeps.autorun do |computation|
       c = a.value + b.value
