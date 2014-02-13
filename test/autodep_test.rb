@@ -97,4 +97,61 @@ class AutoDepsTest < Test::Unit::TestCase
     assert_equal 2, count #the ###1 blocks gets run again, because the isolated block's value changes
 
   end
+
+  def test_embox
+    a = Autodeps::ReactiveData.new(3)
+    b = Autodeps::ReactiveData.new(5)
+    c = nil
+    count = 0
+
+    inner = proc do
+      a.value
+      count += 1
+    end
+
+    outter = Autodeps.embox do
+      inner.call
+    end
+
+    Autodeps.autorun do ###1
+      inner.call
+    end
+    Autodeps.autorun do ###1
+      inner.call
+    end
+    assert_equal 2, count
+
+
+    a.change_to 4
+    assert_equal 4, count
+  end
+
+  def test_embox1
+    a = Autodeps::ReactiveData.new(3)
+    b = Autodeps::ReactiveData.new(5)
+    c = nil
+    count = 0
+
+    inner = proc do
+      a.value
+      count += 1
+    end
+
+    outter = Autodeps.embox do
+      inner.call
+    end
+
+    Autodeps.autorun do ###1
+      outter.call
+    end
+    Autodeps.autorun do ###1
+      outter.call
+    end
+    assert_equal 2, count
+
+
+    a.change_to 4
+    assert_equal 3, count
+  end
+
 end
