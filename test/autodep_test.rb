@@ -147,11 +147,11 @@ class AutoDepsTest < Test::Unit::TestCase
     Autodeps.autorun do ###1
       outter.call
     end
-    assert_equal 2, count
+    assert_equal 1, count
 
 
     a.change_to 4
-    assert_equal 3, count
+    assert_equal 2, count
   end
 
 end

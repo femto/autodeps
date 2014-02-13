@@ -73,13 +73,13 @@ module Autodeps
 
 
       if (! self.invalidated)
-          # if we're currently in _recompute(), don't enqueue
-      # ourselves, since we'll rerun immediately anyway.
-      if (! self.recomputing && ! self.stopped)
-        self.invalidated = true;
-        Autodeps.add_pending_computation(self);
-        require_flush();
-      end
+        # if we're currently in _recompute(), don't enqueue
+        # ourselves, since we'll rerun immediately anyway.
+        if (! self.recomputing && ! self.stopped)
+          self.invalidated = true;
+          Autodeps.add_pending_computation(self);
+          require_flush();
+        end
 
 
 

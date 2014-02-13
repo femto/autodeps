@@ -30,7 +30,7 @@ module Autodeps
       return c
     end
 
-    def nonreactive(f)
+    def nonreactive(&f)
       previous = self.current_computation;
       self.current_computation = nil;
       begin
@@ -107,68 +107,68 @@ module Autodeps
 
 
       curResult = nil;
-       #There's one shared Dependency and Computation for all callers of
+      #There's one shared Dependency and Computation for all callers of
 
-    # our box function.  It gets kicked off if necessary, and when
-    # there are no more dependents, it gets stopped to avoid leaking
-    # memory.
-    resultDep = nil;
-    computation = nil;
+      # our box function.  It gets kicked off if necessary, and when
+      # there are no more dependents, it gets stopped to avoid leaking
+      # memory.
+      resultDep = nil;
+      computation = nil;
 
-    return proc do
-      if (! computation)
-        if (! Deps.active)
-          # Not in a reactive context.  Just call func, and don't start a
-      # computation if there isn't one running already.
-          return func.call();
-        end
-
-        # No running computation, so kick one off.  Since this computation
-        # will be shared, avoid any association with the current computation
-        # by using `Deps.nonreactive`.
-        resultDep = Autodeps.Dependency.new;
-
-        computation = Autodeps.nonreactive do
-          return Autodeps.autorun do
-            oldResult = curResult;
-            curResult = func.call();
-            if (! c.first_run)
-              if (! (equals ? equals(curResult, oldResult) :
-                     curResult == oldResult))
-                resultDep.changed();
-              end
-            end
+      return proc do
+        if (!computation)
+          if (!Autodeps.active)
+            # Not in a reactive context.  Just call func, and don't start a
+            # computation if there isn't one running already.
+            break func.call();
           end
-        end
-      end
 
-      if (Autodeps.active)
-        isNew = resultDep.depend();
-        if (isNew)
-          # For each new dependent, schedule a task for after that dependents
-          # invalidation time and the subsequent flush. The task checks
-          # whether the computation should be torn down.
-          Autodeps.onInvalidate do
-            if (resultDep && !resultDep.hasDependents())
-              Deps.afterFlush do
-                # use a second afterFlush to bump ourselves to the END of the
-                # flush, after computation re-runs have had a chance to
-                # re-establish their connections to our computation.
-                Deps.afterFlush do
-                  if (resultDep && !resultDep.hasDependents())
-                    computation.stop();
-                    computation = null;
-                    resultDep = null;
-                  end
+          # No running computation, so kick one off.  Since this computation
+          # will be shared, avoid any association with the current computation
+          # by using `Deps.nonreactive`.
+          resultDep = Autodeps::Dependency.new;
+
+          computation = Autodeps.nonreactive do
+            break Autodeps.autorun do |c|
+              oldResult = curResult;
+              curResult = func.call();
+              if (!c.first_run)
+                if (!(equals ? equals(curResult, oldResult) :
+                    curResult == oldResult))
+                  resultDep.changed();
                 end
               end
             end
           end
         end
-      end
 
-      return curResult;
-    end
+        if (Autodeps.active)
+          is_new = resultDep.depend();
+          if (is_new)
+            # For each new dependent, schedule a task for after that dependents
+            # invalidation time and the subsequent flush. The task checks
+            # whether the computation should be torn down.
+            #Autodeps.onInvalidate do
+            #  if (resultDep && !resultDep.hasDependents())
+            #    Autodeps.afterFlush do
+            #      # use a second afterFlush to bump ourselves to the END of the
+            #      # flush, after computation re-runs have had a chance to
+            #      # re-establish their connections to our computation.
+            #      Autodeps.afterFlush do
+            #        if (resultDep && !resultDep.hasDependents())
+            #          computation.stop();
+            #          computation = nil;
+            #          resultDep = nil;
+            #        end
+            #      end
+            #    end
+            #  end
+            #end
+          end
+        end
+
+        curResult;
+      end
     end
 
     def embox_value(value, equals=nil)
