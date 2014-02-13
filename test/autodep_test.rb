@@ -154,4 +154,41 @@ class AutoDepsTest < Test::Unit::TestCase
     assert_equal 2, count
   end
 
+  def test_nested_computation
+    a = Autodeps::ReactiveData.new(3)
+    b = Autodeps::ReactiveData.new(5)
+
+    count_1 = 0
+    count_2 = 0
+    compuation1 = nil
+    compuation2 = nil
+
+    compuation1 = Autodeps.autorun do ###1
+      a.value
+      count_1 += 1
+      compuation2 = Autodeps.autorun do ###1
+        b.value
+        count_2 += 1
+      end
+    end
+    assert_equal 1, count_1
+    assert_equal 1, count_2
+    tmp_compuation1 = compuation1
+    tmp_compuation2 = compuation2
+    b.change_to 2
+
+    assert_equal 1, count_1
+    assert_equal 2, count_2
+    assert_equal tmp_compuation1, compuation1
+    assert_equal tmp_compuation2, compuation2
+
+    a.change_to 15
+    assert_equal 2, count_1
+    assert_equal 3, count_2
+    assert_equal tmp_compuation1, compuation1
+    assert_not_equal tmp_compuation2, compuation2
+
+
+  end
+
 end
