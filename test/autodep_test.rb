@@ -73,4 +73,28 @@ class AutoDepsTest < Test::Unit::TestCase
     #
     #assert_equal c,20
   end
+
+  def test_isolation
+    a = Autodeps::ReactiveData.new(3)
+    b = Autodeps::ReactiveData.new(5)
+    c = nil
+    count = 0
+    computation = nil
+    result = nil
+      Autodeps.autorun do ###1
+        count += 1
+        result = Autodeps.isolateValue do ###2
+          a.value >= 3
+        end
+      end
+    assert_equal true, result
+    assert_equal 1, count #the ###1 blocks gets run first_time
+    a.change_to 5
+    assert_equal true, result
+    assert_equal 1, count #the ###1 blocks doesn't gets run again because ###2's value doesn't change, the isolateValue call isolates it
+    a.change_to 2
+    assert_equal false, result
+    assert_equal 2, count #the ###1 blocks gets run again, because the isolated block's value changes
+
+  end
 end

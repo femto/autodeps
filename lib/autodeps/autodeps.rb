@@ -80,7 +80,29 @@ module Autodeps
 
     end
 
-    def current_computation
+    def isolateValue(equals=nil, &f)
+      raise "must define a block" unless f
+      if (!Autodeps.active)
+        return f.call();
+      end
+
+      result_dep = Autodeps::Dependency.new;
+      orig_result = nil
+      Autodeps.autorun do |c|
+        result = f.call();
+        if (c.first_run)
+          orig_result = result;
+        elsif (!(equals ? equals(result, orig_result) :
+            result == orig_result))
+          result_dep.changed();
+        end
+      end
+      result_dep.depend();
+
+      return orig_result;
+    end
+
+      def current_computation
       Thread.current["Autodeps::current_computation"]
     end
     def current_computation=(computation)
