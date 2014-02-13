@@ -48,4 +48,29 @@ class AutoDepsTest < Test::Unit::TestCase
 
     assert_equal c,20
   end
+
+  def test_exception
+    a = Autodeps::ReactiveData.new(3)
+    b = Autodeps::ReactiveData.new(5)
+    c = nil
+    computation = nil
+    begin
+       Autodeps.autorun do |_computation|
+         computation = _computation
+        c = a.value + b.value
+        dd
+      end
+    rescue
+    end
+    p computation
+    #assert_equal c,8
+    #
+    #a.change_to 5
+    #
+    #assert_equal c,10
+    #
+    #b.change_to 15
+    #
+    #assert_equal c,20
+  end
 end

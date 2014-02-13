@@ -1,4 +1,9 @@
+require 'logger'
 module Autodeps
+  class << self
+    attr_accessor :logger
+  end
+  self.logger = Logger.new(STDOUT)
   @pending_computations = []
   @after_flush_callbacks = []
   @constructingComputation = false
@@ -16,7 +21,23 @@ module Autodeps
       @constructingComputation = true
       c = Computation.new(block, Autodeps.current_computation);
 
+      #todo
+      #if (Deps.active)
+      #  Deps.onInvalidate(function () {
+      #    c.stop();
+      #  });
+
       return c
+    end
+
+    def nonreactive(f)
+      previous = self.current_computation;
+      self.current_computation = nil;
+      begin
+        f.call()
+      ensure
+        self.current_computation = previous;
+      end
     end
 
     def flush

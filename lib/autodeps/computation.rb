@@ -31,6 +31,9 @@ module Autodeps
       in_compute = true;
       begin
         block.call(self)
+      #rescue => e
+      #  Autodeps.logger.error(e.message) if Autodeps.logger
+      #  Autodeps.logger.error(e.backtrace.join("\n")) if Autodeps.logger
       ensure
         Autodeps.current_computation = previous;
         in_compute = false;
@@ -41,7 +44,12 @@ module Autodeps
       self.recomputing = true
 
       while (self.invalidated && !self.stopped)
-          self.compute() rescue nil
+        begin
+          self.compute()
+        rescue => e
+          Autodeps.logger.error(e.message) if Autodeps.logger
+          Autodeps.logger.error(e.backtrace.join("\n")) if Autodeps.logger
+        end
       end
 
       self.recomputing = false;
