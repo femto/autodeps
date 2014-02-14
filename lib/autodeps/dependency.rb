@@ -12,9 +12,9 @@ module Autodeps
       end
       if !@dependents.include?(computation)
         @dependents << computation
-        #computation.onInvalidate(function () {
-        #  delete self._dependentsById[id];
-        #});
+        computation.on_invalidate do
+          @dependents.delete(computation)
+        end
         return true
       else
         return false;

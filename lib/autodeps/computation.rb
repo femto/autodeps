@@ -96,7 +96,10 @@ module Autodeps
       end
     end
 
-    def on_invalidate(f)
+    def on_invalidate(f=nil, &block)
+        if block_given?
+          f = block
+        end
         raise ("on_invalidate requires a block") unless f;
 
         g = proc do
