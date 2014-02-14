@@ -7,7 +7,7 @@ module Autodeps
   @pending_computations = []
   @after_flush_callbacks = []
   @constructingComputation = false
-  @active = false
+
 
   class << self
     attr_accessor :active
@@ -167,18 +167,26 @@ module Autodeps
           end
         end
 
-        curResult;
+        curResult
       end
     end
 
     def embox_value(value, equals=nil)
+       raise "embox_value on a direct value not implemented"
+    end
 
+    def active
+      Thread.current["Autodeps::active"]
+    end
+
+    def active= (active)
+      Thread.current["Autodeps::active"] = active
     end
 
     def current_computation
       Thread.current["Autodeps::current_computation"]
     end
-    def current_computation=(computation)
+    def current_computation= (computation)
       Thread.current["Autodeps::current_computation"] = computation
       self.active = !! computation;
     end

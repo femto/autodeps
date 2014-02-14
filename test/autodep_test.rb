@@ -191,4 +191,44 @@ class AutoDepsTest < Test::Unit::TestCase
 
   end
 
+  def test_thread
+    a = Autodeps::ReactiveData.new(3)
+    b = Autodeps::ReactiveData.new(5)
+    c = nil
+    computation = Autodeps.autorun do |computation|
+      c = a.value + b.value
+    end
+    assert_equal c,8
+
+    thread = Thread.new do
+     a.change_to 5
+    end
+    thread.join
+    assert_equal c,10
+
+    thread = Thread.new do
+      b.change_to 15
+    end
+    thread.join
+    assert_equal c,20
+  end
+
+  def test_active
+    a = Autodeps::ReactiveData.new(3)
+    b = Autodeps::ReactiveData.new(5)
+    c = nil
+    computation = Autodeps.autorun do |computation|
+      c = a.value + b.value
+    end
+    assert_equal c,8
+
+
+    thread = Thread.new do
+      assert_equal nil, Autodeps.active
+    end
+    thread.join
+
+  end
+
+
 end
