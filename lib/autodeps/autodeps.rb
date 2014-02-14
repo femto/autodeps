@@ -4,8 +4,8 @@ module Autodeps
     attr_accessor :logger
   end
   self.logger = Logger.new(STDOUT)
-  @pending_computations = []
-  @after_flush_callbacks = []
+  @pending_computations = ThreadSafe::Array.new
+  @after_flush_callbacks = ThreadSafe::Array.new
   @constructingComputation = false
 
 
@@ -21,11 +21,12 @@ module Autodeps
       @constructingComputation = true
       c = Computation.new(block, Autodeps.current_computation);
 
-      #todo
-      #if (Deps.active)
-      #  Deps.onInvalidate(function () {
-      #    c.stop();
-      #  });
+
+      if (Autodeps.active)
+        Autodeps.on_invalidate do
+          c.stop();
+        end
+      end
 
       return c
     end
@@ -78,6 +79,14 @@ module Autodeps
       inFlush = false;
       willFlush = false;
 
+    end
+
+    def on_invalidate(&f)
+      if (! Autodeps.active)
+        raise "AutoDeps.on_invalidate requires a currentComputation"
+      end
+
+        Autodeps.current_computation.on_invalidate(f);
     end
 
     def isolateValue(equals=nil, &f)
@@ -133,7 +142,7 @@ module Autodeps
               oldResult = curResult;
               curResult = func.call();
               if (!c.first_run)
-                if (!(equals ? equals(curResult, oldResult) :
+                if (!(equals ? equals.call(curResult, oldResult) :
                     curResult == oldResult))
                   resultDep.changed();
                 end
@@ -148,22 +157,22 @@ module Autodeps
             # For each new dependent, schedule a task for after that dependents
             # invalidation time and the subsequent flush. The task checks
             # whether the computation should be torn down.
-            #Autodeps.onInvalidate do
-            #  if (resultDep && !resultDep.hasDependents())
-            #    Autodeps.afterFlush do
-            #      # use a second afterFlush to bump ourselves to the END of the
-            #      # flush, after computation re-runs have had a chance to
-            #      # re-establish their connections to our computation.
-            #      Autodeps.afterFlush do
-            #        if (resultDep && !resultDep.hasDependents())
-            #          computation.stop();
-            #          computation = nil;
-            #          resultDep = nil;
-            #        end
-            #      end
-            #    end
-            #  end
-            #end
+            Autodeps.on_invalidate do
+              if (resultDep && !resultDep.hasDependents())
+                Autodeps.afterFlush do
+                  # use a second afterFlush to bump ourselves to the END of the
+                  # flush, after computation re-runs have had a chance to
+                  # re-establish their connections to our computation.
+                  Autodeps.afterFlush do
+                    if (resultDep && !resultDep.hasDependents())
+                      computation.stop();
+                      computation = nil;
+                      resultDep = nil;
+                    end
+                  end
+                end
+              end
+            end
           end
         end
 

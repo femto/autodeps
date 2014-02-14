@@ -62,7 +62,7 @@ class AutoDepsTest < Test::Unit::TestCase
       end
     rescue
     end
-    p computation
+    #puts computation
     #assert_equal c,8
     #
     #a.change_to 5
@@ -169,6 +169,7 @@ class AutoDepsTest < Test::Unit::TestCase
       compuation2 = Autodeps.autorun do ###1
         b.value
         count_2 += 1
+        puts "b is " + b.value.to_s + " , count: " + count_2.to_s
       end
     end
     assert_equal 1, count_1
@@ -188,6 +189,10 @@ class AutoDepsTest < Test::Unit::TestCase
     assert_equal tmp_compuation1, compuation1
     assert_not_equal tmp_compuation2, compuation2
 
+    puts "before"
+    b.change_to 10
+    assert_equal 4, count_2
+    puts "after"
 
   end
 

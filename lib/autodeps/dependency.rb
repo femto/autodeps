@@ -2,7 +2,7 @@ module Autodeps
   class Dependency
     attr_accessor :dependents
     def initialize
-      @dependents = []
+      @dependents = ThreadSafe::Array.new
     end
     def depend(computation = Autodeps.current_computation)
 
