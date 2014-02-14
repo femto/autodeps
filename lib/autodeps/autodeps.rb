@@ -89,6 +89,10 @@ module Autodeps
         Autodeps.current_computation.on_invalidate(f);
     end
 
+    def afterFlush(&f)
+      @after_flush_callbacks.push(f);
+    end
+
     def isolateValue(equals=nil, &f)
       raise "must define a block in isolateValue" unless f
       if (!Autodeps.active)

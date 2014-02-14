@@ -184,6 +184,10 @@ class AutoDepsTest < Test::Unit::TestCase
     assert_equal tmp_compuation2, compuation2
 
     a.change_to 15
+    #todo: clear b's deps's 2 sizes array
+    #in which one(the original one) is stopped,
+    #so we need to sometime clear in order not to
+    #let the deps grow larger and larger.
     assert_equal 2, count_1
     assert_equal 3, count_2
     assert_equal tmp_compuation1, compuation1

@@ -27,5 +27,9 @@ module Autodeps
         computation.invalidate
       end
     end
+
+    def hasDependents
+      !@dependents.empty?
+    end
   end
 end
