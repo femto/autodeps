@@ -1,6 +1,15 @@
 # Autodeps
 
-TODO: Write a gem description
+It's like an auto reactive data source, (like in meteor),
+when you update one place's data, its change automatically propagate to some other place.
+so the basic usage is two places
+1.ReactiveData, where the value of dependent changes propagate to the depended on.
+2.ReactivePersistency,it's the same idea, but in persisent layer,
+normally many times you'll have denormalize data like you copy user's name to
+User's message/comment/likes/lauds etc table to improve performance, but the unfortunate
+effect is you need to remember to update all those places when your user name changes,
+so basiclly it's a custom save inside many after_save hook, very manually and error prone.
+the ReactivePersistency solves this problem.
 
 ## Installation
 
@@ -32,11 +41,11 @@ like you have User table, and Laud table, where you copy user.name to Laud.user_
 class Laud
 
   include MongoMapper::Document
-  include Autodeps::Persistency #这里添加对Autodeps::Persistency 的依赖
+  include Autodeps::Persistency #adds dependency to Autodeps::Persistency
 
   key :user_id, Integer, :required => true
   key :user_name, String
-  depend_on "User", :value_mapping => {:name => :user_name} #默认可以省略 :key_mapping=> {:id=>:user_id}
+  depend_on "User", :value_mapping => {:name => :user_name} #we can omit :key_mapping=> {:id=>:user_id}
 
   key :dest_user_id, Integer, :required => true
   key :dest_user_name, String
