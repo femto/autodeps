@@ -31,10 +31,16 @@ module Autodeps
 
         # if !self._autodeps_self_after_create_callbacked
         #   self._autodeps_self_after_create_callbacked = true
-        #   self.send(:after_create) do
-        #     Mapping.new(self, options[:key_mapping], options[:value_mapping] )
-        #
+        #   self.send(:before_validation) do  #todo：examine we are in create not in update
+        #   relation = clazz
+        #   clazz.where(options[:key_mapping].each do |source_key, target_key|
+        #     relation = relation.where(source_key => self.send(target_key))
         #   end
+        #
+        #   options[:value_mapping].each  do |source_key, target_key|
+        #      self[target_key] = relation.first[source_key] #todo, whatif multiple source document match? should be an error
+        #   end
+        #
         # end
 
         if !clazz._autodeps_after_save_callbacked
