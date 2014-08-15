@@ -32,7 +32,7 @@ module Autodeps
         # if !self._autodeps_self_after_create_callbacked
         #   self._autodeps_self_after_create_callbacked = true
         #   self.send(:before_validation) do  #todo：examine we are in create not in update
-          #   unless self.e.persisted?
+          #   unless self.persisted?
           #   relation = clazz
           #   clazz.where(options[:key_mapping].each do |source_key, target_key|
           #     relation = relation.where(source_key => self.send(target_key))
