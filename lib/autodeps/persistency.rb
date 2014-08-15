@@ -28,6 +28,15 @@ module Autodeps
         Autodeps.autorun do
 
         end
+
+        # if !self._autodeps_self_after_create_callbacked
+        #   self._autodeps_self_after_create_callbacked = true
+        #   self.send(:after_create) do
+        #     Mapping.new(self, options[:key_mapping], options[:value_mapping] )
+        #
+        #   end
+        # end
+
         if !clazz._autodeps_after_save_callbacked
           clazz._autodeps_after_save_callbacked = true
           clazz.send(:after_save) do
