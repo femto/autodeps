@@ -20,6 +20,9 @@ module Autodeps
         class << clazz
           attr_accessor :_deps, :_autodeps_after_save_callbacked
         end
+        class << self
+          attr_accessor :_autodeps_self_after_create_callbacked
+        end
         clazz._deps ||= {}
 
         # options[:value_mapping].keys.sort?
@@ -29,20 +32,22 @@ module Autodeps
 
         end
 
-        # if !self._autodeps_self_after_create_callbacked
-        #   self._autodeps_self_after_create_callbacked = true
-        #   self.send(:before_validation) do  #todo：examine we are in create not in update
-          #   unless self.persisted?
-          #   relation = clazz
-          #   clazz.where(options[:key_mapping].each do |source_key, target_key|
-          #     relation = relation.where(source_key => self.send(target_key))
-          #   end
-          #
-          #   options[:value_mapping].each  do |source_key, target_key|
-          #      self[target_key] = relation.first[source_key] #todo, whatif multiple source document match? should be an error
-          #   end
-        #   end
-        # end
+        if !self._autodeps_self_after_create_callbacked
+          self._autodeps_self_after_create_callbacked = true
+          self.send(:before_validation) do  #todo：examine we are in create not in update
+            #unless self.persisted?
+              relation = clazz
+              options[:key_mapping].each do |source_key, target_key|
+                relation = relation.where(source_key => self.send(target_key))
+              end
+              raise "#{self}: Can't find relation target for #{clazz} to save" if relation.first.nil?
+
+              options[:value_mapping].each  do |source_key, target_key|
+                 self[target_key] = relation.first[source_key] #todo, whatif multiple source document match? should be an error
+              end
+            #end
+          end
+        end
 
         if !clazz._autodeps_after_save_callbacked
           clazz._autodeps_after_save_callbacked = true
